@@ -41,15 +41,10 @@ func handlerRegister(s *state, cmd command) error {
 	}
 
 	currentTime := time.Now()
-
-	userId := uuid.NullUUID{
-		UUID:  uuid.New(),
-		Valid: true,
-	}
 	username := cmd.args[0]
 
 	args := database.CreateUserParams{
-		ID:        userId,
+		ID:        uuid.New(),
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 		Name:      username,
@@ -110,5 +105,35 @@ func handlerAggregator(s *state, cmd command) error {
 	}
 
 	fmt.Println(*rss)
+	return nil
+}
+
+func handlerAddFeed(s *state, cmd command) error {
+	if len(cmd.args) < 2 {
+		return errors.New("The 'addfeed' takes two args, 'name' and 'url'")
+	}
+	username := s.cfg.CurrentUserName
+	user, err := s.db.GetUser(context.Background(), username)
+	if err != nil {
+		return err
+	}
+	feedName := cmd.args[0]
+	Url := cmd.args[1]
+	currentTime := time.Now()
+
+	feedParams := database.CreateFeedParams{
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+		Name:      feedName,
+		Url:       Url,
+		UserID:    user.ID,
+	}
+
+	feed, err := s.db.CreateFeed(context.Background(), feedParams)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(feed)
 	return nil
 }
