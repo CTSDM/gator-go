@@ -1,16 +1,5 @@
 package main
 
-import (
-	"errors"
-	"fmt"
-
-	"github.com/CTSDM/gator-go/internal/config"
-)
-
-type state struct {
-	cfg config.Config
-}
-
 type command struct {
 	name string
 	args []string
@@ -29,19 +18,5 @@ func (c *commands) nun(s *state, cmd command) error {
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func handlerLogin(s *state, cmd command) error {
-	if len(cmd.args) == 0 {
-		return errors.New("The 'login' handler expects a single argument, 'username', but none was given!")
-	}
-
-	err := s.cfg.SetUser(cmd.args[0])
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("The user has been set")
 	return nil
 }
