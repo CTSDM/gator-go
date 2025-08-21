@@ -7,3 +7,10 @@ RETURNING *;
 SELECT *
 FROM users
 WHERE name = $1;
+
+-- name: GetUsers :many
+SELECT *
+FROM users;
+
+-- name: DropUsers :exec
+DELETE FROM users;

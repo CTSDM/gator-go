@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/CTSDM/gator-go/internal/database"
@@ -65,5 +66,49 @@ func handlerRegister(s *state, cmd command) error {
 
 	fmt.Printf("The new user %q was created\n", username)
 	fmt.Println(user)
+	return nil
+}
+
+func handlerReset(s *state, cmd command) error {
+	err := s.db.DropUsers(context.Background())
+	if err != nil {
+		log.Println(err)
+		return errors.New("Something went wrong while resetting the users table...")
+	}
+
+	fmt.Println("The users table was reset successfully!")
+	return nil
+}
+
+func handlerUsers(s *state, cmd command) error {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return err
+	}
+
+	if len(users) == 0 {
+		fmt.Println("No users in the database.")
+		return nil
+	}
+
+	for _, user := range users {
+		toPrint := "* " + user.Name
+		if user.Name == s.cfg.CurrentUserName {
+			toPrint += " (current)"
+		}
+		fmt.Println(toPrint)
+	}
+
+	return nil
+}
+
+func handlerAggregator(s *state, cmd command) error {
+	url := "https://www.wagslane.dev/index.xml"
+	rss, err := fetchFeed(context.Background(), url)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(*rss)
 	return nil
 }
