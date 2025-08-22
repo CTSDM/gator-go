@@ -33,15 +33,15 @@ func main() {
 	}
 
 	cmds := commands{handlers: make(map[string]func(*state, command) error)}
+	cmds.register("addfeed", handlerAddFeed)
+	cmds.register("agg", handlerAggregator)
+	cmds.register("feeds", handlerFeeds)
+	cmds.register("follow", handlerFollow)
+	cmds.register("following", handlerFollowing)
 	cmds.register("login", handlerLogin)
 	cmds.register("register", handlerRegister)
 	cmds.register("reset", handlerReset)
 	cmds.register("users", handlerUsers)
-	cmds.register("agg", handlerAggregator)
-	cmds.register("addfeed", handlerAddFeed)
-	cmds.register("feeds", handlerFeeds)
-	cmds.register("follow", handlerFollow)
-	cmds.register("following", handlerFollowing)
 
 	cmd := command{}
 	cmd.name = args[1]
@@ -50,7 +50,7 @@ func main() {
 		cmd.args = args[2:]
 	}
 
-	err = cmds.nun(&runState, cmd)
+	err = cmds.run(&runState, cmd)
 	if err != nil {
 		log.Fatal(err)
 	}
