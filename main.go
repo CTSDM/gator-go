@@ -40,6 +40,8 @@ func main() {
 	cmds.register("agg", handlerAggregator)
 	cmds.register("addfeed", handlerAddFeed)
 	cmds.register("feeds", handlerFeeds)
+	cmds.register("follow", handlerFollow)
+	cmds.register("following", handlerFollowing)
 
 	cmd := command{}
 	cmd.name = args[1]
