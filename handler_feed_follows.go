@@ -12,7 +12,7 @@ import (
 
 func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.args) < 1 {
-		return errors.New("The 'follow' command takes the command 'url'")
+		return errors.New("The 'follow' command takes the parameter 'url'")
 	}
 	url := cmd.args[0]
 
@@ -61,6 +61,13 @@ func handlerFollowing(s *state, cmd command, user database.User) error {
 		return err
 	}
 
+	if len(feed_follows) == 0 {
+		fmt.Println("--------------------------")
+		fmt.Printf("%s is not following any feeds.\n", user.Name)
+		fmt.Println("--------------------------")
+		return nil
+	}
+
 	fmt.Println("--------------------------")
 	fmt.Printf("Current user: %s\n", user.Name)
 	fmt.Println("Followed feeds:")
@@ -70,4 +77,18 @@ func handlerFollowing(s *state, cmd command, user database.User) error {
 	fmt.Println("--------------------------")
 
 	return nil
+}
+
+func handlerUnfollow(s *state, cmd command, user database.User) error {
+	if len(cmd.args) == 0 {
+		return errors.New("The 'follow' command takes the parameter 'url'")
+	}
+	url := cmd.args[0]
+
+	_, err := s.db.DeleteFeedFollow(context.Background(), database.DeleteFeedFollowParams{UserID: user.ID, Url: url})
+	if err == sql.ErrNoRows {
+		fmt.Printf("Can't unfollow feed %q because it's not in %s's follow list.\n", url, user.Name)
+		return nil
+	}
+	return err
 }
