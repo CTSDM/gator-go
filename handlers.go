@@ -31,7 +31,9 @@ func handlerLogin(s *state, cmd command) error {
 		return err
 	}
 
-	fmt.Println("The user has been set")
+	fmt.Println("--------------------------")
+	fmt.Printf("The user %s\n has been logged in.", s.cfg.CurrentUserName)
+	fmt.Println("--------------------------")
 	return nil
 }
 
@@ -59,8 +61,9 @@ func handlerRegister(s *state, cmd command) error {
 		return err
 	}
 
-	fmt.Printf("The new user %q was created\n", username)
-	fmt.Println(user)
+	fmt.Println("--------------------------")
+	fmt.Printf("The user %s\n has been created.", user.Name)
+	fmt.Println("--------------------------")
 	return nil
 }
 
@@ -71,7 +74,9 @@ func handlerReset(s *state, cmd command) error {
 		return errors.New("Something went wrong while resetting the users table...")
 	}
 
+	fmt.Println("--------------------------")
 	fmt.Println("The users table was reset successfully!")
+	fmt.Println("--------------------------")
 	return nil
 }
 
@@ -86,6 +91,8 @@ func handlerUsers(s *state, cmd command) error {
 		return nil
 	}
 
+	fmt.Println("--------------------------")
+	fmt.Println("Current existing users:")
 	for _, user := range users {
 		toPrint := "* " + user.Name
 		if user.Name == s.cfg.CurrentUserName {
@@ -93,18 +100,23 @@ func handlerUsers(s *state, cmd command) error {
 		}
 		fmt.Println(toPrint)
 	}
+	fmt.Println("--------------------------")
 
 	return nil
 }
 
 func handlerAggregator(s *state, cmd command) error {
+	// fetches a RSS and prints the result
 	url := "https://www.wagslane.dev/index.xml"
 	rss, err := fetchFeed(context.Background(), url)
 	if err != nil {
 		return err
 	}
 
+	fmt.Println("--------------------------")
+	fmt.Println("Fetched RSS:")
 	fmt.Println(*rss)
+	fmt.Println("--------------------------")
 	return nil
 }
 
@@ -145,7 +157,9 @@ func handlerAddFeed(s *state, cmd command) error {
 		return err
 	}
 
+	fmt.Println("--------------------------")
 	fmt.Println(feed)
+	fmt.Println("--------------------------")
 	return nil
 }
 
@@ -155,9 +169,12 @@ func handlerFeeds(s *state, cmd command) error {
 		return err
 	}
 
+	fmt.Println("--------------------------")
+	fmt.Println("Existing feeds:")
 	for _, feed := range feeds {
 		fmt.Println(feed)
 	}
+	fmt.Println("--------------------------")
 	return nil
 }
 
