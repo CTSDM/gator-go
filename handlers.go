@@ -19,20 +19,20 @@ func handlerLogin(s *state, cmd command) error {
 
 	// check if the users exists in the database
 	username := cmd.args[0]
-	user, err := s.db.GetUser(context.Background(), username)
+	_, err := s.db.GetUser(context.Background(), username)
 	if err == sql.ErrNoRows {
 		return errors.New("No user found with that username.")
 	} else if err != nil {
 		return err
 	}
 
-	err = s.cfg.SetUser(user.Name)
+	err = s.cfg.SetUser(username)
 	if err != nil {
 		return err
 	}
 
 	fmt.Println("--------------------------")
-	fmt.Printf("The user %s\n has been logged in.", s.cfg.CurrentUserName)
+	fmt.Printf("The user %s\n has been logged in.\n", s.cfg.CurrentUserName)
 	fmt.Println("--------------------------")
 	return nil
 }
@@ -62,7 +62,7 @@ func handlerRegister(s *state, cmd command) error {
 	}
 
 	fmt.Println("--------------------------")
-	fmt.Printf("The user %s\n has been created.", user.Name)
+	fmt.Printf("The user %s has been created.\n", user.Name)
 	fmt.Println("--------------------------")
 	return nil
 }
@@ -179,6 +179,11 @@ func handlerFeeds(s *state, cmd command) error {
 }
 
 func handlerFollow(s *state, cmd command) error {
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
 	if len(cmd.args) < 1 {
 		return errors.New("The 'follow' command takes two args, 'name' and 'url'")
 	}
@@ -190,11 +195,6 @@ func handlerFollow(s *state, cmd command) error {
 			fmt.Println("there is no feed related to the given url.")
 			return err
 		}
-		return err
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
 		return err
 	}
 
@@ -220,6 +220,10 @@ func handlerFollow(s *state, cmd command) error {
 }
 
 func handlerFollowing(s *state, cmd command) error {
+	_, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
 	feed_follows, err := s.db.GetFeedfollowsForUser(context.Background(), s.cfg.CurrentUserName)
 	if err != nil {
 		return err
