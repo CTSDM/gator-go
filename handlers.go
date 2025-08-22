@@ -120,14 +120,9 @@ func handlerAggregator(s *state, cmd command) error {
 	return nil
 }
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) < 2 {
 		return errors.New("The 'addfeed' command takes two args, 'name' and 'url'")
-	}
-	username := s.cfg.CurrentUserName
-	user, err := s.db.GetUser(context.Background(), username)
-	if err != nil {
-		return err
 	}
 	feedName := cmd.args[0]
 	Url := cmd.args[1]
@@ -178,14 +173,9 @@ func handlerFeeds(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollow(s *state, cmd command) error {
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return err
-	}
-
+func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.args) < 1 {
-		return errors.New("The 'follow' command takes two args, 'name' and 'url'")
+		return errors.New("The 'follow' command takes the command 'url'")
 	}
 	url := cmd.args[0]
 
@@ -195,6 +185,15 @@ func handlerFollow(s *state, cmd command) error {
 			fmt.Println("there is no feed related to the given url.")
 			return err
 		}
+		return err
+	}
+
+	// Check if the relation user-feed exists in the feed_follows table
+	_, err = s.db.GetFeedFollow(context.Background(), database.GetFeedFollowParams{UserID: user.ID, FeedID: feed.ID})
+	if err == nil {
+		fmt.Printf("The feed %q is already being followed by the current user %q\n", feed.Name, user.Name)
+		return nil
+	} else if err != sql.ErrNoRows {
 		return err
 	}
 
@@ -219,18 +218,14 @@ func handlerFollow(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollowing(s *state, cmd command) error {
-	_, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return err
-	}
-	feed_follows, err := s.db.GetFeedfollowsForUser(context.Background(), s.cfg.CurrentUserName)
+func handlerFollowing(s *state, cmd command, user database.User) error {
+	feed_follows, err := s.db.GetFeedFollowsForUser(context.Background(), user.Name)
 	if err != nil {
 		return err
 	}
 
 	fmt.Println("--------------------------")
-	fmt.Printf("Current user: %s\n", s.cfg.CurrentUserName)
+	fmt.Printf("Current user: %s\n", user.Name)
 	fmt.Println("Followed feeds:")
 	for _, feed_follow := range feed_follows {
 		fmt.Printf("- %s\n", feed_follow.FeedName)
