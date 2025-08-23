@@ -7,9 +7,8 @@ RETURNING *;
 -- name: GetPostsForUser :many
 SELECT posts.*
 FROM posts
-INNER JOIN feeds
-ON feeds.id = posts.feed_id
 INNER JOIN feed_follows
-ON feed_follows.user_id = $1
+ON feed_follows.feed_id = posts.feed_id
+WHERE feed_follows.user_id = $1
 ORDER BY posts.updated_at DESC NULLS LAST
 LIMIT $2;
