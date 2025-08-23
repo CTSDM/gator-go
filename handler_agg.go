@@ -57,16 +57,50 @@ func scrapeFeeds(s *state) error {
 	}
 
 	items := rss.Channel.Item
-	printPostTitles(items, feed.Name)
-
-	return nil
+	err = savePosts(s, items, feed)
+	return err
 }
 
-func printPostTitles(posts []RSSItem, feedName string) {
+func savePosts(s *state, posts []RSSItem, feed database.Feed) error {
 	fmt.Println("--------------------------")
-	fmt.Printf("Posts from %s:\n", feedName)
+	fmt.Printf("Saving posts from %s...\n", feed.Name)
+	if len(posts) == 0 {
+		fmt.Println("There are no posts to save...")
+		fmt.Println("--------------------------")
+		return nil
+	}
+
+	newPostsSaved := 0
 	for _, post := range posts {
-		fmt.Printf("- %s\n", post.Title)
+		pubDate, err := time.Parse(time.RFC1123Z, post.PubDate)
+		if err != nil {
+			return err
+		}
+
+		currentTime := time.Now()
+		newPostParams := database.CreatePostParams{
+			CreatedAt:   currentTime,
+			UpdatedAt:   currentTime,
+			Title:       post.Title,
+			Url:         sql.NullString{String: post.Link, Valid: true},
+			Description: sql.NullString{String: post.Description, Valid: true},
+			PublishedAt: sql.NullTime{Time: pubDate, Valid: true},
+			FeedID:      feed.ID,
+		}
+		_, err = s.db.CreatePost(context.Background(), newPostParams)
+		if err == nil {
+			newPostsSaved++
+			continue
+		} else if err != sql.ErrNoRows {
+			return err
+		}
+	}
+
+	if newPostsSaved == 0 {
+		fmt.Printf("From %v fetched posts, no new posts were found.\n", len(posts))
+	} else {
+		fmt.Printf("From %v fetched posts, %v posts were new and were successfully saved.\n", len(posts), newPostsSaved)
 	}
 	fmt.Printf("--------------------------\n\n")
+	return nil
 }
