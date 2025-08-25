@@ -12,7 +12,7 @@ import (
 
 func handlerAggregator(s *state, cmd command) error {
 	if len(cmd.args) == 0 {
-		return errors.New("The 'agg' command takes one parameter, 'url'")
+		return errors.New("The 'agg' command takes one parameter, 'time', i.e. 1h1m")
 	}
 
 	timeRefreshFeedInput := cmd.args[0]
