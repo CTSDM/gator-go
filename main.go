@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"os"
 
@@ -22,7 +21,19 @@ func main() {
 	}
 
 	// let's connect to the database
-	db, err := sql.Open("postgres", cfg.DB_URL)
+	db, err := getDatabase(cfg)
+	if err != nil {
+		log.Fatalf("error connecting to the databse: %v", err)
+	}
+
+	// check if the tables exist
+	_, err = db.Query("SELECT * FROM users;")
+	if err != nil {
+		err2 := createTables(db)
+		if err2 != nil {
+			log.Fatalf("%v", err2)
+		}
+	}
 
 	dbQueries := database.New(db)
 	runState := state{cfg: &cfg, db: dbQueries}
